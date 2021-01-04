@@ -48,15 +48,14 @@ class SentenceDataset(Dataset):
         return source_sentences, target_sentences
 
     def convert_to_tensor(self, sentence, tokens_vocab):
-        # converts a list of tokens into padded tokens using the corresponding vocabulary 
-        # for out of vocabulary words, assigns '<unk>'
+        ''' Converts a list of tokens into padded tokens using the corresponding vocabulary '''
 
         word_ids = [tokens_vocab.get(word, tokens_vocab['<unk>']) for word in sentence]
         padded_ids = self.pad_sentences(word_ids)
         return torch.tensor(padded_ids, dtype=torch.long)
 
     def pad_sentences(self, sentence):
-        # pads a sentence to a specific number of tokens 
+        ''' Pads a sentence to a specific number of tokens '''
         assert len(sentence) > 0
         if len(sentence) < self.num_tokens:
             return sentence + [0] * (self.num_tokens - len(sentence))
@@ -111,5 +110,8 @@ class Vocabulary:
         return Vocabulary(source_vocab, target_vocab)
 
 if __name__ == '__main__':
-    dataset = SentenceDataset('github_train.txt', encoding_type='char', save_vocab='vocab.json')
-    print('{} training examples loaded'.format(len(dataset)))
+    train_data = SentenceDataset('github_train.txt', encoding_type='char', save_vocab='vocab.json')
+    print('{} training examples loaded'.format(len(train_data)))
+    print('{} vocabulary items saved'.format(len(train_data.vocab.source_vocab)))
+    val_data = SentenceDataset('github_val.txt', encoding_type='char', load_vocab='vocab.json')
+    print('{} validation examples loaded'.format(len(val_data)))
