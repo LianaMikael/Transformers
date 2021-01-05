@@ -33,4 +33,4 @@ class Embeddings(nn.Module):
     div_term = torch.exp(torch.arange(0, self.hidden_dim, 2) * -(math.log(10000.0) / self.hidden_dim))
     pos_enc[:, 0::2] = torch.sin(positions * div_term)
     pos_enc[:, 1::2] = torch.cos(positions * div_term)
-    return pos_enc.unsqueeze(0)
+    return pos_enc.unsqueeze(0).to(self.device)
