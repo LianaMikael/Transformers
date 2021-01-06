@@ -1,5 +1,6 @@
 import torch 
 import torch.nn as nn
+from torch.utils.tensorboard import SummaryWriter
 import argparse
 from dataset import SentenceDataset
 from embeddings import Embeddings
@@ -31,6 +32,7 @@ parser.add_argument('-load_model', type=str, default=None, help='path to model c
 args = parser.parse_args()
 
 def train(model, train_loader, val_loader, optimizer, loss_function, device):
+    writer = SummaryWriter()
     model.train()
     val_losses = []
     for epoch in range(args.epochs):
@@ -54,12 +56,17 @@ def train(model, train_loader, val_loader, optimizer, loss_function, device):
         
             if i % args.save_every == 0:
                 val_loss = evaluate(model, val_loader, loss_function, device)
+
+                writer.add_scalar('Loss/train', loss.item(), epoch*len(train_loader)+i)
+                writer.add_scalar('Loss/val', val_loss, epoch*len(train_loader)+i)
+                
                 model.train()
-                print('epoch: {}, train iteration: {}, train loss {}, val loss {}'.format(epoch, i, loss.item(), val_loss))
+                print('epoch: {}, train iteration: {}, train loss {}, val loss {}'.format(epoch, epoch*len(train_loader)+i, loss.item(), val_loss))
                 val_losses.append(val_loss)
 
                 if val_loss <= min(val_losses):
                     model.save(args.save_model)
+    writer.close()
 
 def evaluate(model, val_loader, loss_function, device):
     model.eval()
@@ -76,7 +83,7 @@ def evaluate(model, val_loader, loss_function, device):
 
             loss = loss_function(output, target)
             val_loss += loss.item()
-             
+            break 
     return val_loss / len(val_loader)
 
 def main():
@@ -89,7 +96,7 @@ def main():
     input_dim = len(train_data.vocab.source_vocab)
     output_dim = len(train_data.vocab.target_vocab)
     static = args.embedding_type == 'static'
-
+    
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     enc_embedding = Embeddings(input_dim, args.hidden_dim, args.max_len, device, static)
