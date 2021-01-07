@@ -59,7 +59,7 @@ class DecoderLayer(nn.Module):
     target_self_att = self.masked_self_att(target, target, target, target_mask)
     new_target = self.masked_self_att_norm(target + self.dropout(target_self_att))
 
-    combined_att = self.combined_att(encoded_source, target, encoded_source, source_mask)
+    combined_att = self.combined_att(encoded_source, new_target, encoded_source, source_mask)
     new_target = self.combined_att_norm(new_target + self.dropout(combined_att))
 
     target_feedforward = self.feedforward(new_target)
