@@ -19,7 +19,7 @@ class Embeddings(nn.Module):
       self.pos_embeddings = nn.Embedding(max_length, hidden_dim)
 
   def forward(self, source):
-    token_embed = self.token_embeddings(source) * math.sqrt(source.shape[-1])
+    token_embed = self.token_embeddings(source) * math.sqrt(self.hidden_dim)
     if self.static:
       return token_embed + self.pos_embeddings[:, :token_embed.size(1)]
 
