@@ -23,7 +23,7 @@ parser.add_argument('-num_dec_layers', type=int, default=6, help='number of deco
 parser.add_argument('-num_enc_heads', type=int, default=8, help='number of multi-head attention heads in encoder')
 parser.add_argument('-num_dec_heads', type=int, default=8, help='number of multi-head attention heads in decoder')
 parser.add_argument('-max_len', type=int, default=100, help='maximum number of input tokens')
-parser.add_argument('-dropout', type=int, default=0.1, help='dropout')
+parser.add_argument('-dropout', type=int, default=0.15, help='dropout')
 parser.add_argument('-lr', type=float, default=0.0005, help='learning rate')
 parser.add_argument('-epochs', type=int, default=10, help='number of epochs')
 parser.add_argument('-save_every', type=int, default=1, help='number of iteraitions to save and evaluate')
@@ -53,7 +53,7 @@ def train(model, train_loader, val_loader, optimizer, loss_function, device):
 
             optimizer.step()
             optimizer.zero_grad()
-        
+            
             if i % args.save_every == 0:
                 val_loss = evaluate(model, val_loader, loss_function, device)
 
@@ -83,8 +83,11 @@ def evaluate(model, val_loader, loss_function, device):
 
             loss = loss_function(output, target)
             val_loss += loss.item()
-            break 
+            return val_loss
     return val_loss / len(val_loader)
+
+def count_parames(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 def main():
     train_data = SentenceDataset(args.train_file, encoding_type=args.encoding_type)
@@ -110,6 +113,8 @@ def main():
     pad_id = train_data.vocab.source_vocab['<pad>']
 
     model = Transformer(encoder, decoder, pad_id, device)
+
+    print('Transformer has {:,} trainable parameters'.format(count_parames(model)))
 
     if args.load_model is not None:
         model.load(args.load_model)
