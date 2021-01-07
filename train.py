@@ -89,6 +89,12 @@ def evaluate(model, val_loader, loss_function, device):
 def count_parames(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
+def init_weights(m):
+    if hasattr(m, 'weight') and m.weight.dim() > 1:
+        nn.init.xavier_uniform_(m.weight.data)
+    if hasattr(m, 'bias') and m.bias is not None:
+        nn.init.constant_(m.bias.data, 0.0)
+
 def main():
     train_data = SentenceDataset(args.train_file, encoding_type=args.encoding_type)
     val_data = SentenceDataset(args.val_file, encoding_type=args.encoding_type)
@@ -118,6 +124,8 @@ def main():
 
     if args.load_model is not None:
         model.load(args.load_model)
+    else:
+        model.apply(init_weights)
 
     optimizer = torch.optim.Adam(model.parameters(), lr = args.lr)
 
