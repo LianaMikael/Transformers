@@ -38,7 +38,7 @@ def train(model, train_loader, val_loader, optimizer, loss_function, device):
     for epoch in range(args.epochs):
         for i, batch in enumerate(train_loader):
             source = batch[0].to(device)
-            target = batch[0].to(device)
+            target = batch[1].to(device)
 
             output = model(source, target[:,:-1])
 
