@@ -14,4 +14,12 @@ Dataset used: [Github typo corpus](https://github.com/mhagiwara/github-typo-corp
 
 Positional encoding is designed to incorporate a noition of order of tokens in a sentence. Learned positional encoding is implemented by introducing an embedding layer of maximum token size and embedding size. Static positional encoding are implemented by introducing fixed sinusoidal functions of different frequencies. For more information about positional encodings, check [this paper](https://www.aclweb.org/anthology/2020.emnlp-main.555/). 
 
-While training the corrector with character-level encoding, we observe no substantial differences in loss graphs and overall performance. This is consistent with the results in [Attention is All You Need](https://arxiv.org/abs/1706.03762). 
+While training the corrector with character-level encoding, we observe no substantial differences in loss graphs during training and validation and overall performance. This is consistent with the results in [Attention is All You Need](https://arxiv.org/abs/1706.03762). 
+
+## How To Use
+
+Create a conda environment and install required packages
+```
+conda env create -f env.yml
+conda activate transformer_env
+```
