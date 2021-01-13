@@ -16,6 +16,7 @@ parser.add_argument('-save_vocab', type=str, default='vocab.json', help='json fi
 parser.add_argument('-load_vocab', type=str, default=None, help='json file to load vocabulary from')
 parser.add_argument('-embedding_type', type=str, default='learned', help='learned or static')
 parser.add_argument('-batch_size', type=int, default=64, help='batch size of training')
+parser.add_argument('-filter_threshold', type=float, default=0.2, help='threshold to filter out data according to WER or CER')
 parser.add_argument('-hidden_dim', type=int, default=256, help='dimentionality of the model')
 parser.add_argument('-inner_dim', type=int, default=1024, help='dimentionality to upsamle the model in position-wise feedforward layer')
 parser.add_argument('-num_enc_layers', type=int, default=6, help='number of encoder layers')
@@ -23,7 +24,7 @@ parser.add_argument('-num_dec_layers', type=int, default=6, help='number of deco
 parser.add_argument('-num_enc_heads', type=int, default=8, help='number of multi-head attention heads in encoder')
 parser.add_argument('-num_dec_heads', type=int, default=8, help='number of multi-head attention heads in decoder')
 parser.add_argument('-max_len', type=int, default=100, help='maximum number of input tokens')
-parser.add_argument('-dropout', type=int, default=0.15, help='dropout')
+parser.add_argument('-dropout', type=float, default=0.15, help='dropout')
 parser.add_argument('-lr', type=float, default=0.0005, help='learning rate')
 parser.add_argument('-epochs', type=int, default=10, help='number of epochs')
 parser.add_argument('-save_every', type=int, default=1, help='number of iteraitions to save and evaluate')
@@ -96,11 +97,13 @@ def init_weights(m):
         nn.init.constant_(m.bias.data, 0.0)
 
 def main():
-    train_data = SentenceDataset(args.train_file, encoding_type=args.encoding_type)
-    val_data = SentenceDataset(args.val_file, encoding_type=args.encoding_type)
+    train_data = SentenceDataset(args.train_file, encoding_type=args.encoding_type, filter_threshold=args.filter_threshold)
+    val_data = SentenceDataset(args.val_file, encoding_type=args.encoding_type, filter_threshold=args.filter_threshold)
 
     train_loader = torch.utils.data.DataLoader(train_data, args.batch_size, shuffle=True)
     val_loader = torch.utils.data.DataLoader(val_data, args.batch_size)
+
+    print(len(train_loader))
 
     input_dim = len(train_data.vocab.source_vocab)
     output_dim = len(train_data.vocab.target_vocab)

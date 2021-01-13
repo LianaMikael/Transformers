@@ -2,12 +2,14 @@ import torch
 from torch.utils.data import Dataset
 from nltk.tokenize import word_tokenize
 import json 
+from jiwer import wer 
 
 class SentenceDataset(Dataset):
     ''' Dataset of source and target tensors '''
-    def __init__(self, data_path, encoding_type, load_vocab=None, save_vocab=None, num_tokens=100):
+    def __init__(self, data_path, encoding_type, load_vocab=None, save_vocab=None, filter_threshold=None, num_tokens=100):
         self.data_path = data_path
         self.encoding_type = encoding_type
+        self.filter_threshold = filter_threshold
         self.source_sentences, self.target_sentences = self.read_and_tokenize()
         self.num_tokens = num_tokens
 
@@ -41,6 +43,10 @@ class SentenceDataset(Dataset):
                     target_tokens = self.char_tokenize(line[1])
                 else:
                     raise NotImplementedError('Dataset only supports character-based (char) or word-based (word) encoding')
+
+                if self.filter_threshold:
+                    if wer(target_tokens, source_tokens) > self.filter_threshold:
+                        continue 
 
                 source_sentences.append(source_tokens)
                 target_sentences.append(['<s>'] + target_tokens + ['</s>']) 
