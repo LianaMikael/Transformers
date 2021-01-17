@@ -41,8 +41,14 @@ class SentenceDataset(Dataset):
                 elif self.encoding_type == 'char':
                     source_tokens = self.char_tokenize(line[0])
                     target_tokens = self.char_tokenize(line[1])
+                elif self.encoding_type == 'bpe':
+                    from transformers import BertTokenizer
+                    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+                    source_tokens = tokenizer.tokenize(line[0])
+                    target_tokens = tokenizer.tokenize(line[1])
+                    # TODO: add a custom BPE tokenizer 
                 else:
-                    raise NotImplementedError('Dataset only supports character-based (char) or word-based (word) encoding')
+                    raise NotImplementedError('Dataset only supports character-based (char), word-based (word) or bpe encoding ')
 
                 if self.filter_threshold:
                     if wer(target_tokens, source_tokens) > self.filter_threshold:
