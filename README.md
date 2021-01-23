@@ -23,3 +23,12 @@ Create a conda environment and install required packages
 conda env create -f env.yml
 conda activate transformer_env
 ```
+Read github data and split into train, validation and test sets
+```
+python3 process_data.py
+```
+
+Start training of the typo corrector, set encoding and embedding types accordingly
+```
+python3 train.py -encoding_type char -embedding_type learned 
+```
