@@ -7,6 +7,9 @@ from embeddings import Embeddings
 from encoder import Encoder, EncoderLayer
 from decoder import Decoder, DecoderLayer
 from transformer import Transformer
+from infer import Inferencer
+
+torch.manual_seed(0)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-train_file', type=str, default='github_train.txt', help='path to training dataset file')
@@ -15,21 +18,22 @@ parser.add_argument('-encoding_type', type=str, default='char', help='char or wo
 parser.add_argument('-save_vocab', type=str, default='vocab.json', help='json file to save vocabulary into')
 parser.add_argument('-load_vocab', type=str, default=None, help='json file to load vocabulary from')
 parser.add_argument('-embedding_type', type=str, default='learned', help='learned or static')
-parser.add_argument('-batch_size', type=int, default=64, help='batch size of training')
+parser.add_argument('-batch_size', type=int, default=128, help='batch size of training')
 parser.add_argument('-filter_threshold', type=float, default=0.2, help='threshold to filter out data according to WER or CER')
 parser.add_argument('-hidden_dim', type=int, default=256, help='dimentionality of the model')
-parser.add_argument('-inner_dim', type=int, default=1024, help='dimentionality to upsamle the model in position-wise feedforward layer')
-parser.add_argument('-num_enc_layers', type=int, default=6, help='number of encoder layers')
-parser.add_argument('-num_dec_layers', type=int, default=6, help='number of decoder layers')
+parser.add_argument('-inner_dim', type=int, default=512, help='dimentionality to upsamle the model in position-wise feedforward layer')
+parser.add_argument('-num_enc_layers', type=int, default=3, help='number of encoder layers')
+parser.add_argument('-num_dec_layers', type=int, default=3, help='number of decoder layers')
 parser.add_argument('-num_enc_heads', type=int, default=8, help='number of multi-head attention heads in encoder')
 parser.add_argument('-num_dec_heads', type=int, default=8, help='number of multi-head attention heads in decoder')
 parser.add_argument('-max_len', type=int, default=100, help='maximum number of input tokens')
-parser.add_argument('-dropout', type=float, default=0.15, help='dropout')
+parser.add_argument('-dropout', type=float, default=0.1, help='dropout')
 parser.add_argument('-lr', type=float, default=0.0005, help='learning rate')
-parser.add_argument('-epochs', type=int, default=10, help='number of epochs')
-parser.add_argument('-save_every', type=int, default=1, help='number of iteraitions to save and evaluate')
+parser.add_argument('-epochs', type=int, default=1, help='number of epochs')
+parser.add_argument('-save_every', type=int, default=50, help='number of iteraitions to save and evaluate')
 parser.add_argument('-save_model', type=str, default='best_model.bin', help='path to save model checkpoint')
 parser.add_argument('-load_model', type=str, default=None, help='path to model checkpoint to load')
+parser.add_argument('-mode', type=str, default='train', help='train or test mode')
 args = parser.parse_args()
 
 def train(model, train_loader, val_loader, optimizer, loss_function, device):
@@ -50,7 +54,7 @@ def train(model, train_loader, val_loader, optimizer, loss_function, device):
 
             loss.backward()
 
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
 
             optimizer.step()
             optimizer.zero_grad()
@@ -130,12 +134,21 @@ def main():
     else:
         model.apply(init_weights)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr = args.lr)
+    if args.mode == 'test':
+        inferencer = Inferencer(model, train_data.vocab, device)
+        greedy_out = inferencer.infer_greedy('helo world, I m testin a typo corector')
+        print(greedy_out)
 
-    loss_function = nn.NLLLoss(ignore_index=pad_id)
+    elif args.mode == 'train':
+        optimizer = torch.optim.Adam(model.parameters(), lr = args.lr)
 
-    print('Started training...')
-    train(model, train_loader, val_loader, optimizer, loss_function, device)
+        loss_function = nn.NLLLoss(ignore_index=pad_id)
+
+        print('Started training...')
+        train(model, train_loader, val_loader, optimizer, loss_function, device)
+    
+    else:
+        raise ValueError('Mode not recognized')
 
 if __name__ == '__main__':
     main()
