@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 from nltk.tokenize import word_tokenize
 import json 
 from jiwer import wer 
+from transformers import BertTokenizer
 
 class SentenceDataset(Dataset):
     ''' Dataset of source and target tensors '''
@@ -32,6 +33,9 @@ class SentenceDataset(Dataset):
         ''' Reads and tokenizes source and target sentences '''
         source_sentences = []
         target_sentences = []
+
+        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        
         with open(self.data_path, 'r+') as f:
             for line in f:
                 line = line.split(',')
@@ -42,8 +46,6 @@ class SentenceDataset(Dataset):
                     source_tokens = self.char_tokenize(line[0])
                     target_tokens = self.char_tokenize(line[1])
                 elif self.encoding_type == 'bpe':
-                    from transformers import BertTokenizer
-                    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
                     source_tokens = tokenizer.tokenize(line[0])
                     target_tokens = tokenizer.tokenize(line[1])
                     # TODO: add a custom BPE tokenizer 
