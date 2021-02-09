@@ -14,7 +14,8 @@ Dataset used: [Github typo corpus](https://github.com/mhagiwara/github-typo-corp
 
 Positional encoding is designed to incorporate a noition of order of tokens in a sentence. Learned positional encoding is implemented by introducing an embedding layer of maximum token size and embedding size. Static positional encoding are implemented by introducing fixed sinusoidal functions of different frequencies. For more information about positional encodings, check [this paper](https://www.aclweb.org/anthology/2020.emnlp-main.555/). 
 
-While training the corrector with character-level and and byte-part encoding (BPE), we observe no substantial differences in loss graphs during training and validation and overall performance. This is consistent with the results in [Attention is All You Need](https://arxiv.org/abs/1706.03762). We only compare the performance of character-level and BPE, since word-level encoding is not applicable for this task. 
+We train the corrector with character-level and and byte-part encoding (BPE) encoding, since word-level encoding is not applicable for this task. While training with character-level encoding, the validation loss did not decrease for a very large number of iterations. 
+To create BPE encodings, we use [BertTokenizer](https://huggingface.co/transformers/model_doc/bert.html) from the [transofrmers library](https://huggingface.co/transformers/index.html). With BPE we observed a more rapid decrease in validation loss. 
 
 # Data Augmentation 
 
